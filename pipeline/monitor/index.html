@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion, local steps</title>
+<style>
+@font-face { font-family: Archivo; src: url(/fonts/archivo.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Space Mono"; src: url(/fonts/space-mono-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Space Mono"; src: url(/fonts/space-mono-700.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+
+:root { --red: #ae1018; --ink: #141412; --white: #ffffff; --sans: Archivo, system-ui, sans-serif; --mono: "Space Mono", ui-monospace, Menlo, monospace; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--red); color: var(--white); font-family: var(--sans); font-variant-numeric: tabular-nums; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr); height: 100vh; }
+main.split { grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); }
+
+#run { padding: 32px 56px; overflow-y: auto; min-height: 0; }
+.brand { margin: 0; font-size: 30px; font-weight: 900; }
+h1 { margin: 18px 0 22px; font-size: 54px; font-weight: 900; line-height: 1.05; }
+
+form { background: var(--white); color: var(--ink); border-radius: 12px; padding: 16px 22px; }
+textarea { display: block; width: 100%; border: 0; outline: 0; resize: none; background: none; color: var(--ink); font: 500 26px/1.25 var(--sans); }
+.controls { display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 22px; font-weight: 600; }
+input[type=date] { border: 0; background: none; color: var(--ink); font: 700 22px var(--mono); }
+button { margin-left: auto; border: 0; border-radius: 8px; padding: 10px 34px; background: var(--red); color: var(--white); font: 800 24px var(--sans); cursor: pointer; }
+button:disabled { cursor: default; }
+textarea:focus-visible, input:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; border-radius: 4px; }
+button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+#steps { list-style: none; margin: 22px 0 0; padding: 0; }
+#steps li { display: grid; grid-template-columns: 170px minmax(0, 1fr) 130px; column-gap: 20px; align-items: baseline; padding: 7px 0; font-size: 28px; line-height: 1.2; }
+#steps .name { font-weight: 800; }
+#steps .text { font-weight: 400; }
+#steps .time { text-align: right; font: 400 26px var(--mono); }
+#steps li.running .text { font-weight: 800; }
+#steps li.running .time { font-weight: 700; }
+
+#ready, #message { margin: 14px 0 0; font-size: 44px; font-weight: 900; line-height: 1.1; }
+#message { font-size: 30px; font-weight: 800; }
+
+main.split h1 { font-size: 40px; margin: 12px 0 16px; }
+main.split textarea { font-size: 20px; }
+main.split .controls, main.split input[type=date] { font-size: 18px; }
+main.split button { font-size: 20px; padding: 7px 26px; }
+main.split #run { padding: 28px 40px; }
+main.split #steps { margin-top: 14px; }
+main.split #steps li { grid-template-columns: 112px minmax(0, 1fr) 84px; column-gap: 12px; padding: 5px 0; font-size: 21px; }
+main.split #steps .time { font-size: 20px; }
+main.split #ready { font-size: 36px; }
+
+#quotes { display: none; background: var(--white); color: var(--ink); padding: 32px 44px; overflow-y: auto; min-height: 0; }
+main.split #quotes { display: block; }
+#quotes h2 { margin: 0 0 18px; font-size: 34px; font-weight: 900; line-height: 1.1; }
+#quotes ol { list-style: none; margin: 0; padding: 0; }
+#quotes li { margin: 0 0 18px; }
+#quotes .source { display: block; font: 700 20px var(--mono); color: var(--red); }
+#quotes .quote { font-size: 24px; line-height: 1.3; font-weight: 500; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main id="main">
+  <section id="run">
+    <p class="brand">Fusion</p>
+    <h1>Local steps only. Nothing goes to Reactor.</h1>
+    <form id="form">
+      <textarea id="question" rows="2" aria-label="Question" required>Did anyone describe this: A device that corrects a wrong clock using the time in a TLS server certificate?</textarea>
+      <div class="controls">
+        <label for="cutoff">Before</label>
+        <input id="cutoff" type="date" value="2016-02-11" required>
+        <button id="go" type="submit">Run</button>
+      </div>
+    </form>
+    <ol id="steps"></ol>
+    <p id="ready" hidden>Ready for Reactor. Not sent.</p>
+    <p id="message" role="alert" hidden></p>
+  </section>
+  <section id="quotes" aria-live="polite">
+    <h2 id="tally"></h2>
+    <ol id="quote-list"></ol>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const rows = new Map();
+let ticking = null;
+
+function row(step) {
+  let li = rows.get(step);
+  if (!li) {
+    li = document.createElement("li");
+    for (const part of ["name", "text", "time"]) {
+      const span = document.createElement("span");
+      span.className = part;
+      li.append(span);
+    }
+    li.querySelector(".name").textContent = step;
+    $("steps").append(li);
+    rows.set(step, li);
+  }
+  return li;
+}
+
+function stopTicking() {
+  if (ticking) clearInterval(ticking.timer);
+  ticking = null;
+}
+
+function start(line) {
+  stopTicking();
+  const li = row(line.step);
+  li.className = "running";
+  li.querySelector(".text").textContent = line.text;
+  const from = performance.now();
+  const time = li.querySelector(".time");
+  const tick = () => { time.textContent = `${((performance.now() - from) / 1000).toFixed(1)} s`; };
+  tick();
+  ticking = { timer: setInterval(tick, 100) };
+}
+
+function done(line) {
+  stopTicking();
+  if (line.step === "Reactor") { $("ready").hidden = false; return; }
+  const li = row(line.step);
+  li.className = "";
+  li.querySelector(".text").textContent = line.text;
+  li.querySelector(".time").textContent = line.seconds === null ? "" : `${line.seconds.toFixed(1)} s`;
+  if (line.quotes) showQuotes(line);
+}
+
+function showQuotes(line) {
+  $("tally").textContent = `${line.kept} quotes kept, ${line.dropped} dropped`;
+  for (const { source, quote } of line.quotes) {
+    const li = document.createElement("li");
+    const from = document.createElement("span");
+    from.className = "source";
+    from.textContent = source;
+    const words = document.createElement("span");
+    words.className = "quote";
+    words.textContent = `"${quote}"`;
+    li.append(from, words);
+    $("quote-list").append(li);
+  }
+  $("main").classList.add("split");
+}
+
+function say(text) {
+  $("message").textContent = text;
+  $("message").hidden = false;
+}
+
+function reset() {
+  stopTicking();
+  rows.clear();
+  $("steps").replaceChildren();
+  $("quote-list").replaceChildren();
+  $("main").classList.remove("split");
+  $("ready").hidden = true;
+  $("message").hidden = true;
+}
+
+async function run() {
+  reset();
+  const response = await fetch("/run", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ question: $("question").value, cutoff: $("cutoff").value }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    say(body.error || "The run failed.");
+    return;
+  }
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let pending = "";
+  let finished = false;
+  for (;;) {
+    const { done: ended, value } = await reader.read();
+    if (ended) break;
+    pending += value;
+    const lines = pending.split("\n");
+    pending = lines.pop();
+    for (const text of lines) {
+      const line = JSON.parse(text);
+      if (line.event === "error") say(line.text);
+      else if (line.event === "start") start(line);
+      else {
+        done(line);
+        if (line.step === "Reactor") finished = true;
+      }
+    }
+  }
+  if (!finished && $("message").hidden) say("The run failed.");
+}
+
+$("form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  $("go").disabled = true;
+  $("go").textContent = "Running";
+  try {
+    await run();
+  } catch {
+    say("The run failed. Is the server on?");
+  }
+  stopTicking();
+  $("go").disabled = false;
+  $("go").textContent = "Run";
+});
+</script>
+</body>
+</html>
