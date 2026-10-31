@@ -34,6 +34,13 @@ export type Finding = {
   error?: string
 }
 
+// Every dated document in a corpus, counted by month ("2014-03").
+export type Timeline = {
+  months: [string, number][]
+  patents: number
+  emails: number
+}
+
 // What was ranked for this case's cutoff, not the whole corpus.
 export type Scope = {
   list: string

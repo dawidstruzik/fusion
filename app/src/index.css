@@ -1,12 +1,11 @@
 :root {
-  --blue: #1538c4;
-  --yellow: #ffe83d;
-  --ink: #0d1220;
-  --meta: #4a5366;
-  --desk: #e7ebf2;
+  --red: #ae1018;
+  --ink: #141412;
+  --meta: #45433e;
+  --desk: #f2efe8;
   --paper: #ffffff;
-  --sans: 'Libre Franklin Variable', 'Helvetica Neue', Arial, sans-serif;
-  --mono: 'Courier Prime', 'Courier New', monospace;
+  --sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'Space Mono', 'Courier New', monospace;
 }
 
 *,
@@ -29,29 +28,40 @@ body {
   font-size: 17px;
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
-  caret-color: var(--blue);
+  caret-color: var(--red);
 }
 
 button,
 input,
-textarea,
-select {
+textarea {
   font: inherit;
   color: inherit;
 }
 
 ::selection {
-  background: var(--yellow);
+  background: var(--red);
+  color: var(--paper);
+}
+
+.rail ::selection,
+.home ::selection {
+  background: var(--paper);
   color: var(--ink);
 }
 
+.home textarea::selection {
+  background: var(--red);
+  color: var(--paper);
+}
+
 :focus-visible {
-  outline: 3px solid var(--blue);
+  outline: 3px solid var(--red);
   outline-offset: 2px;
 }
 
-.rail :focus-visible {
-  outline-color: var(--yellow);
+.rail :focus-visible,
+.home :focus-visible {
+  outline-color: var(--paper);
 }
 
 .fatal,
@@ -60,21 +70,220 @@ select {
   font-size: 22px;
 }
 
+.name {
+  color: inherit;
+  font-size: 24px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.light-button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.light-button:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.light-button:disabled {
+  background: color-mix(in srgb, var(--paper) 70%, var(--red));
+  cursor: not-allowed;
+}
+
+/* Home: one red page, with the question, the box and the previous searches in a centered column. */
+
+.home {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--red);
+  color: var(--paper);
+}
+
+.home-name {
+  position: absolute;
+  top: 34px;
+  left: 56px;
+  font-size: 26px;
+}
+
+.home-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(880px, calc(100% - 48px));
+  min-height: 100%;
+  margin-inline: auto;
+  padding-block: 84px 48px;
+}
+
+.home-title {
+  margin: 0 -120px;
+  font-size: clamp(44px, 5.6vw, 80px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.home-box {
+  margin-top: 44px;
+  padding: 20px 24px 16px;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 28px 64px rgb(58 0 4 / 50%), 0 6px 16px rgb(58 0 4 / 32%);
+}
+
+.home-box:focus-within {
+  outline: 3px solid var(--paper);
+  outline-offset: 3px;
+}
+
+.home-box :focus-visible {
+  outline-color: var(--ink);
+}
+
+.home-box textarea {
+  display: block;
+  width: 100%;
+  height: 72px;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.3;
+  resize: none;
+}
+
+.home-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.home-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--meta);
+  font-size: 18px;
+}
+
+.home-date input {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--desk);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.home-go {
+  padding: 11px 26px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--red);
+  color: var(--paper);
+  font-size: 19px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.home-go:hover:not(:disabled) {
+  background: var(--ink);
+}
+
+.home-go:disabled {
+  background: var(--meta);
+  cursor: not-allowed;
+}
+
+.home-note {
+  margin: 14px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.saved-heading {
+  margin: 56px 0 10px;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.saved-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 32px;
+  margin-inline: -16px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.saved:hover,
+.saved:focus-visible {
+  background: var(--desk);
+  color: var(--ink);
+  outline: 0;
+}
+
+.saved-title {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.saved-date {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .home-title {
+    margin-inline: 0;
+    white-space: normal;
+  }
+}
+
+/* The idea page: the case on the red rail, the record on the desk. */
+
 .shell {
   display: grid;
   grid-template-columns: minmax(380px, 34%) 1fr;
   height: 100%;
 }
 
-/* The rail: the case, in exhibit blue. */
-
 .rail {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--blue);
+  background: var(--red);
   color: var(--paper);
-  scrollbar-color: var(--paper) var(--blue);
+  scrollbar-color: var(--paper) var(--red);
 }
 
 .rail-top {
@@ -84,100 +293,31 @@ select {
   padding: 24px 32px 0;
 }
 
-.name {
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.rail-button {
-  padding: 8px 14px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--paper);
-  color: var(--blue);
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.rail-button:hover {
-  background: var(--yellow);
-  color: var(--ink);
-}
-
 .idea {
   padding: 16px 32px 10px;
 }
 
 .idea-title {
   margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-wrap: balance;
 }
 
-.idea textarea {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--paper);
-  color: var(--ink);
+.idea-text {
+  margin: 0;
   font-size: 15px;
   line-height: 1.4;
-  resize: vertical;
-}
-
-.idea-date {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.idea-date input {
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 17px;
-}
-
-.examples {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 6px;
-  font-size: 15px;
-}
-
-.case-select {
-  flex: 1;
-  min-width: 0;
-  padding: 2px 0;
-  border: 0;
-  background: transparent;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.case-select option {
-  color: var(--ink);
 }
 
 .cutoff {
   display: block;
   margin: 12px 0 0;
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.1;
   text-wrap: balance;
-}
-
-.idea-date .cutoff {
-  margin: 0;
 }
 
 .tally {
@@ -205,17 +345,13 @@ select {
   cursor: pointer;
 }
 
-.element:hover:not([aria-current='true'], .element-static) {
-  background: color-mix(in srgb, var(--paper) 12%, var(--blue));
+.element:hover:not([aria-current='true']) {
+  background: color-mix(in srgb, var(--paper) 12%, var(--red));
 }
 
 .element[aria-current='true'] {
   background: var(--desk);
   color: var(--ink);
-}
-
-.element-static {
-  cursor: default;
 }
 
 .element-text {
@@ -233,23 +369,21 @@ select {
 .element-none {
   display: block;
   margin-top: 2px;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
 .element-kind {
   font-weight: 500;
 }
 
-.element-date {
-  color: var(--yellow);
-}
-
 .element[aria-current='true'] .element-date {
-  color: var(--blue);
+  color: var(--red);
 }
 
 .element-none {
+  font-size: 17px;
   font-weight: 500;
 }
 
@@ -259,8 +393,6 @@ select {
   gap: 16px;
   padding: 16px 32px 24px;
 }
-
-/* The desk: the record for the selected element. */
 
 .desk {
   min-width: 0;
@@ -280,7 +412,7 @@ select {
   max-width: 34em;
   margin: 0;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.2;
   text-wrap: balance;
 }
@@ -307,7 +439,7 @@ select {
   margin-top: 44px;
   padding: 28px 36px 20px;
   background: var(--paper);
-  box-shadow: 0 10px 30px rgb(13 18 32 / 12%);
+  box-shadow: 0 10px 30px rgb(20 20 18 / 12%);
 }
 
 .sticker {
@@ -316,16 +448,16 @@ select {
   right: 28px;
   z-index: 1;
   padding: 12px 20px 14px;
-  background: var(--blue);
+  background: var(--red);
   color: var(--paper);
-  box-shadow: 0 6px 14px rgb(13 18 32 / 25%);
+  box-shadow: 0 6px 14px rgb(20 20 18 / 25%);
   animation: stick 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sticker strong {
   display: block;
   font-size: 34px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.1;
 }
 
@@ -349,7 +481,7 @@ select {
 
 .patent-number {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .patent-title {
@@ -371,15 +503,7 @@ select {
 .sheet-patent .body {
   font-family: var(--sans);
   font-size: 19px;
-  line-height: 1.5;
-}
-
-.figure {
-  flex: 0 0 34%;
-  min-width: 0;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: top;
+  line-height: 29px;
 }
 
 .sheet-patent .source {
@@ -399,16 +523,9 @@ select {
   margin-bottom: 14px;
   padding-right: 360px;
   font-family: var(--mono);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.35;
-}
-
-.sheet-main {
-  display: flex;
-  flex: 1;
-  gap: 28px;
-  min-height: 0;
+  line-height: 1.4;
 }
 
 .body {
@@ -417,22 +534,31 @@ select {
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 8px 12px 8px 0;
-  mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 8px), transparent);
+  padding-right: 12px;
   font-family: var(--mono);
-  font-size: 17px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 24px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   scrollbar-color: var(--meta) var(--paper);
 }
 
+/* The record's own words: bold ink on a thick red underline, in place of a highlighter. */
 mark {
-  background: var(--yellow);
+  background: none;
   color: var(--ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 4px;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 0.2em;
 }
 
 .source {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
   padding-top: 14px;
   font-family: var(--mono);
   font-size: 15px;
@@ -440,24 +566,12 @@ mark {
   overflow-wrap: anywhere;
 }
 
-.source a,
-.text-link {
-  color: var(--blue);
+.source a {
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.source a {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.text-link {
-  padding: 0;
-  border: 0;
-  background: none;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .results {
@@ -520,7 +634,7 @@ mark {
 .none-line {
   margin: 0;
   font-size: 60px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.05;
   text-wrap: balance;
 }
@@ -557,7 +671,7 @@ textarea::placeholder {
   padding: 12px 20px;
   border: 0;
   border-radius: 6px;
-  background: var(--blue);
+  background: var(--red);
   color: var(--paper);
   font-weight: 700;
   cursor: pointer;
@@ -578,17 +692,6 @@ textarea::placeholder {
   font-weight: 600;
 }
 
-.run {
-  display: block;
-  margin-top: 24px;
-  font-size: 19px;
-}
-
-button.none-scope {
-  display: block;
-  margin-top: 24px;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .sticker {
     animation: none;
@@ -605,6 +708,19 @@ button.none-scope {
   body,
   #root {
     height: auto;
+  }
+
+  .home {
+    height: auto;
+  }
+
+  .home-name {
+    top: 20px;
+    left: 24px;
+  }
+
+  .saved {
+    gap: 16px;
   }
 
   .rail-top,
@@ -655,16 +771,6 @@ button.none-scope {
   .headers,
   .patent-head {
     padding-right: 0;
-  }
-
-  .sheet-main {
-    flex-direction: column;
-  }
-
-  .figure {
-    flex: none;
-    width: 100%;
-    max-height: 60vh;
   }
 
   .body {

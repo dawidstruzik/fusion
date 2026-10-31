@@ -8,10 +8,6 @@ export function longDate(date: string) {
   return utc(date).toLocaleDateString('en-US', { dateStyle: 'long', timeZone: 'UTC' })
 }
 
-export function today() {
-  return new Date().toISOString().slice(0, 10)
-}
-
 function plural(count: number, word: string) {
   return `${count} ${word}${count === 1 ? '' : 's'}`
 }
@@ -59,14 +55,19 @@ export function sourceName(list: string) {
   return /\s/.test(list) ? list : `the ${list} mailing list`
 }
 
+function readMix({ read, readPatents }: Finding) {
+  return readPatents ? `: ${plural(readPatents, 'patent')} and ${plural(read - readPatents, 'email')}` : ''
+}
+
+function nounFor(list: string) {
+  return /\s/.test(list) ? 'documents' : 'messages'
+}
+
 export function scopeSentence(c: Case, finding: Finding) {
   if (!c.scope) return 'The search scope for this case is not available.'
   const { messages, list, first, last } = c.scope
-  const noun = /\s/.test(list) ? 'documents' : 'messages'
-  const ranked = `We ranked ${messages.toLocaleString('en-US')} ${noun} in ${sourceName(list)}, dated ${longDate(first)} to ${longDate(last)}`
-  const { read, readPatents } = finding
-  const mix = readPatents ? `: ${plural(readPatents, 'patent')} and ${plural(read - readPatents, 'email')}` : ''
-  return `${ranked}, and Reactor read the ${read} closest${mix}.`
+  const ranked = `We ranked ${messages.toLocaleString('en-US')} ${nounFor(list)} in ${sourceName(list)}, dated ${longDate(first)} to ${longDate(last)}`
+  return `${ranked}, and Reactor read the ${finding.read} closest${readMix(finding)}.`
 }
 
 function chartEntry(c: Case, finding: Finding) {

@@ -1,14 +1,14 @@
 // Turns saved Reactor runs into cases. The date check lives here, in code: a cited message
 // only counts as prior art if it has a date and that date is before the cutoff.
 import { Glob } from 'bun'
-import type { Case, Evidence, Finding, Scope } from '../src/types.ts'
+import type { Case, Evidence, Finding, Scope, Timeline } from '../src/types.ts'
 
 const pipelineDir = process.env.PIPELINE_DIR ?? new URL('../../pipeline', import.meta.url).pathname
 const runsDir = `${pipelineDir}/runs`
 const corpusDir = `${pipelineDir}/corpus`
 
 // The case the app opens on, ahead of the others, whichever run of it is shown.
-const DEMO_CASE = 'esni'
+const DEMO_CASE = 'clock'
 
 type Passage = { id: string; date?: string; text?: string }
 type LedgerRow = { id?: string; quote?: string }
@@ -108,6 +108,7 @@ function cleanAnswer(answer: string | undefined): string | null {
     .replace(/\s*\[E\d+\]/g, '')
     .replace(/\s*[–—]\s*/g, ', ')
     .trim()
+    .replace(/([^.!?])$/, '$1.')
 }
 
 type Source = { corpus: string; index: Map<string, MessageRow>; figures: Figures }
@@ -207,6 +208,23 @@ export async function figureFile(corpus: string, path: string) {
   if (!listed.includes(path)) return null
   const file = Bun.file(`${corpusDir}/${corpus}/figures/${path}`)
   return (await file.exists()) ? file : null
+}
+
+// Every dated document, counted by month, for the home page's picture of what's searched.
+export async function loadTimeline(corpus: string): Promise<Timeline | null> {
+  if (!/^[\w.-]+$/.test(corpus)) return null
+  if (!(await Bun.file(`${corpusDir}/${corpus}/messages.jsonl`).exists())) return null
+  const counts = new Map<string, number>()
+  let patents = 0
+  let emails = 0
+  for (const row of (await readIndex(corpus)).values()) {
+    const month = isoDate(row.date)?.slice(0, 7)
+    if (!month) continue
+    counts.set(month, (counts.get(month) ?? 0) + 1)
+    if (row.kind === 'patent') patents += 1
+    else emails += 1
+  }
+  return { months: [...counts].sort(([a], [b]) => a.localeCompare(b)), patents, emails }
 }
 
 async function readList(corpus: string) {

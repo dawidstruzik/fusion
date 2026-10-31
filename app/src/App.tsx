@@ -7,9 +7,7 @@ import {
   kindWord,
   longDate,
   scopeSentence,
-  sourceName,
   splitIdea,
-  today,
 } from './lib'
 import type { Case, Evidence, Finding, Scope } from './types'
 
@@ -18,6 +16,22 @@ const SECONDS_PER_QUESTION = 150
 const REFRESH_MS = 15_000
 
 type Draft = { text: string; cutoff: string }
+
+// Every date a case's cited documents carry, earliest first.
+function citedDates(c: Case) {
+  const dates = c.elements.flatMap((finding) => finding.evidence.map((e) => e.date))
+  return dates.filter((date) => date !== null).sort()
+}
+
+// A hash route, so the browser's back button works: `#/` is home, `#/idea/<id>` one idea.
+function routeCase() {
+  const match = location.hash.match(/^#\/idea\/(.+)$/)
+  return match ? decodeURIComponent(match[1] as string) : null
+}
+
+function ideaHref(id: string) {
+  return `#/idea/${encodeURIComponent(id)}`
+}
 
 // Fresh saved cases, keeping what only this page has: follow-ups and live cases.
 function mergeSaved(fresh: Case[], old: Case[]) {
@@ -29,8 +43,8 @@ function mergeSaved(fresh: Case[], old: Case[]) {
 }
 
 // Open a case on the first answer that shows the record's own words.
-function openingFinding(c: Case | undefined) {
-  return (c?.elements.find((f) => f.evidence[0]?.marks.length) ?? c?.elements[0])?.id ?? null
+function openingFinding(c: Case | null) {
+  return c?.elements.find((f) => f.evidence[0]?.marks.length) ?? c?.elements[0] ?? null
 }
 
 function pending(element: string): Finding {
@@ -53,9 +67,9 @@ export default function App() {
   const [cases, setCases] = useState<Case[] | null>(null)
   const [live, setLive] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [caseId, setCaseId] = useState<string | null>(null)
+  const [caseId, setCaseId] = useState(routeCase)
   const [findingId, setFindingId] = useState<string | null>(null)
-  const [draft, setDraft] = useState<Draft | null>(null)
+  const [draft, setDraft] = useState<Draft>({ text: '', cutoff: '' })
 
   useEffect(() => {
     fetch('/api/cases')
@@ -64,12 +78,14 @@ export default function App() {
         if (!res.ok) throw new Error(body.error)
         setCases(body.cases)
         setLive(body.live)
-        const first = body.cases[0] as Case | undefined
-        setCaseId(first?.id ?? null)
-        setFindingId(openingFinding(first))
-        if (!first) setDraft({ text: '', cutoff: today() })
       })
       .catch((error: Error) => setLoadError(error.message))
+  }, [])
+
+  useEffect(() => {
+    const follow = () => setCaseId(routeCase())
+    window.addEventListener('hashchange', follow)
+    return () => window.removeEventListener('hashchange', follow)
   }, [])
 
   // A run is still answering: pick up each answer as it lands.
@@ -85,20 +101,10 @@ export default function App() {
     return () => clearInterval(timer)
   }, [runActive])
 
-  const current = cases?.find((c) => c.id === caseId) ?? cases?.[0] ?? null
-  const finding = current?.elements.find((f) => f.id === findingId) ?? current?.elements[0] ?? null
+  const current = cases?.find((c) => c.id === caseId) ?? null
+  const finding = current?.elements.find((f) => f.id === findingId) ?? openingFinding(current)
   const running = !!cases?.some((c) => c.elements.some((f) => f.status === 'running' || f.status === 'queued'))
-  const parts = useMemo(() => splitIdea(draft?.text ?? ''), [draft?.text])
-
-  function chooseCase(id: string) {
-    setCaseId(id)
-    setFindingId(openingFinding(cases?.find((c) => c.id === id)))
-    setDraft(null)
-  }
-
-  function editDraft(next: Partial<Draft>) {
-    setDraft((d) => ({ text: current?.claim ?? '', cutoff: current?.cutoff ?? today(), ...d, ...next }))
-  }
+  const parts = useMemo(() => splitIdea(draft.text), [draft.text])
 
   function patchCase(id: string, patch: (c: Case) => Case) {
     setCases((all) => all?.map((c) => (c.id === id ? patch(c) : c)) ?? all)
@@ -138,7 +144,6 @@ export default function App() {
   }
 
   async function runIdea() {
-    if (!draft) return
     const id = crypto.randomUUID()
     const elements = parts.map((part) => ({ ...pending(part), question: `Did anyone describe this: ${part}?` }))
     const fresh: Case = {
@@ -147,15 +152,15 @@ export default function App() {
       title: `Your idea, ${elements.length} parts`,
       claim: draft.text,
       cutoff: draft.cutoff,
-      corpus: current?.corpus ?? 'ietf-tls',
+      corpus: cases?.[0]?.corpus ?? 'ietf-tls',
       scope: null,
       history: null,
       elements,
     }
     setCases((all) => [...(all ?? []), fresh])
-    setCaseId(id)
     setFindingId(elements[0]?.id ?? null)
-    setDraft(null)
+    setDraft({ text: '', cutoff: '' })
+    location.hash = ideaHref(id)
     let history: string | null = ''
     for (const element of elements) {
       if (history === null) {
@@ -177,90 +182,123 @@ export default function App() {
   if (loadError) return <p className="fatal">{loadError} Restart the API server and reload.</p>
   if (!cases) return <p className="fatal">Reading saved answers.</p>
 
-  const list = current?.scope?.list ?? cases[0]?.scope?.list
+  if (!current || !finding) {
+    return (
+      <Home
+        cases={cases}
+        draft={draft}
+        parts={parts}
+        live={live}
+        busy={running}
+        onDraft={(next) => setDraft((d) => ({ ...d, ...next }))}
+        onRun={runIdea}
+      />
+    )
+  }
 
   return (
     <div className="shell">
       <aside className="rail">
         <div className="rail-top">
-          <span className="name">Fusion</span>
-          <button type="button" className="rail-button" onClick={() => setDraft({ text: '', cutoff: today() })}>
+          <a className="name" href="#/">
+            Fusion
+          </a>
+          <a className="light-button" href="#/">
             New idea
-          </button>
+          </a>
         </div>
 
         <div className="idea">
-          <h1 className="idea-title">
-            <label htmlFor="idea">Describe your idea</label>
-          </h1>
-          <textarea
-            id="idea"
-            rows={7}
-            value={draft ? draft.text : (current?.claim ?? '')}
-            placeholder="A method comprising: receiving ...; storing ...; and sending ..."
-            onChange={(event) => editDraft({ text: event.target.value })}
-          />
-          {draft ? (
-            <div className="idea-date">
-              <label htmlFor="cutoff" className="cutoff">
-                Before
-              </label>
-              <input
-                id="cutoff"
-                type="date"
-                value={draft.cutoff}
-                onChange={(event) => editDraft({ cutoff: event.target.value })}
-              />
-            </div>
-          ) : current ? (
-            <p className="cutoff">Before {longDate(current.cutoff)}</p>
-          ) : null}
-          {cases.length ? (
-            <label className="examples">
-              Worked example{' '}
-              <select
-                className="case-select"
-                value={draft ? '' : (current?.id ?? '')}
-                onChange={(event) => chooseCase(event.target.value)}
-              >
-                {draft ? <option value="">Choose one</option> : null}
-                {cases.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
+          <h1 className="idea-title">{current.title}</h1>
+          <p className="idea-text">{current.claim}</p>
+          <p className="cutoff">Before {longDate(current.cutoff)}</p>
         </div>
 
-        {draft ? (
-          <ul className="elements">
-            {parts.map((part, index) => (
-              <li key={`${index}-${part}`} className="element element-static">
-                <span className="element-text">{part}</span>
-              </li>
-            ))}
-          </ul>
-        ) : current ? (
-          <CaseRail c={current} selected={finding?.id ?? null} onSelect={setFindingId} />
-        ) : null}
+        <CaseRail c={current} selected={finding.id} onSelect={setFindingId} />
       </aside>
 
       <main className="desk">
-        {draft ? (
-          <IdeaView
-            parts={parts}
-            cutoff={draft.cutoff}
-            source={list ? sourceName(list) : null}
-            live={live}
-            busy={running}
-            canReturn={cases.length > 0}
-            onRun={runIdea}
-            onBack={() => setDraft(null)}
+        <FindingView key={finding.id} c={current} finding={finding} live={live} busy={running} onAsk={followUp} />
+      </main>
+    </div>
+  )
+}
+
+function Home(props: {
+  cases: Case[]
+  draft: Draft
+  parts: string[]
+  live: boolean
+  busy: boolean
+  onDraft: (next: Partial<Draft>) => void
+  onRun: () => void
+}) {
+  const { cases, draft, parts, live, busy, onDraft, onRun } = props
+  const [tried, setTried] = useState(false)
+  const minutes = Math.ceil((parts.length * SECONDS_PER_QUESTION) / 60)
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault()
+    if (!live) setTried(true)
+    else if (!busy && parts.length && draft.cutoff) onRun()
+  }
+
+  const note = tried
+    ? 'Live search is off for this demo. Open a previous search below.'
+    : live && parts.length
+      ? `${parts.length} ${parts.length === 1 ? 'part' : 'parts'}, about ${minutes} minutes.`
+      : null
+
+  return (
+    <div className="home">
+      <span className="name home-name">Fusion</span>
+      <main className="home-column">
+        <h1 className="home-title">Did anyone think of it first?</h1>
+        <form className="home-box" onSubmit={submit}>
+          <textarea
+            aria-label="Describe your idea"
+            placeholder="Describe your idea"
+            value={draft.text}
+            onChange={(event) => onDraft({ text: event.target.value })}
           />
-        ) : current && finding ? (
-          <FindingView key={finding.id} c={current} finding={finding} live={live} busy={running} onAsk={followUp} />
+          <div className="home-row">
+            <label className="home-date">
+              Before
+              <input
+                type="date"
+                value={draft.cutoff}
+                onChange={(event) => onDraft({ cutoff: event.target.value })}
+              />
+            </label>
+            <button type="submit" className="home-go" disabled={live && (busy || !parts.length || !draft.cutoff)}>
+              {busy ? 'Reactor is busy' : 'Search'}
+            </button>
+          </div>
+        </form>
+        {note ? (
+          <p className="home-note" role={tried ? 'status' : undefined}>
+            {note}
+          </p>
+        ) : null}
+        {cases.length ? (
+          <section>
+            <h2 className="saved-heading">Previous searches</h2>
+            <ul className="saved-list">
+              {cases.map((c) => {
+                const earliest = citedDates(c)[0]
+                return (
+                  <li key={c.id}>
+                    <a className="saved" href={ideaHref(c.id)}>
+                      <span className="saved-title">{c.title.split(',')[0]}</span>
+                      <span className="saved-date">
+                        {earliest ? `Earliest cited ${earliest.slice(0, 4)}` : 'Nothing cited'}
+                      </span>
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
         ) : null}
       </main>
     </div>
@@ -313,7 +351,7 @@ function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: stri
       </ul>
 
       <div className="rail-foot">
-        <button type="button" className="rail-button" onClick={copy}>
+        <button type="button" className="light-button" onClick={copy}>
           {copied ? 'Copied' : 'Copy claim chart'}
         </button>
       </div>
@@ -347,59 +385,6 @@ function RailStatus({ finding }: { finding: Finding }) {
   if (finding.status === 'failed') return <span className="element-none">Reactor didn't answer</span>
   if (finding.status === 'not_found') return <span className="element-none">Not found</span>
   return null
-}
-
-function IdeaView(props: {
-  parts: string[]
-  cutoff: string
-  source: string | null
-  live: boolean
-  busy: boolean
-  canReturn: boolean
-  onRun: () => void
-  onBack: () => void
-}) {
-  const { parts, cutoff, source, live, busy, canReturn, onRun, onBack } = props
-  const minutes = Math.ceil((parts.length * SECONDS_PER_QUESTION) / 60)
-  const back = canReturn ? (
-    <button type="button" className="text-link none-scope" onClick={onBack}>
-      Back to the worked example
-    </button>
-  ) : null
-
-  if (!parts.length) {
-    return (
-      <div className="finding">
-        <div className="none">
-          <p className="none-line">What's the idea?</p>
-          {source ? (
-            <p className="none-scope">We read the closest documents in {source} and show the earliest we find.</p>
-          ) : null}
-          {back}
-        </div>
-      </div>
-    )
-  }
-  return (
-    <div className="finding">
-      <div className="none">
-        <p className="none-line">
-          {parts.length} {parts.length === 1 ? 'part' : 'parts'}, about {minutes} minutes.
-        </p>
-        <p className="none-scope">
-          Each part takes 2 to 3 minutes, because Reactor reads the closest documents and writes the answer.
-        </p>
-        {live ? (
-          <button type="button" className="action run" disabled={busy || !cutoff} onClick={onRun}>
-            {busy ? 'Reactor is busy' : 'Find similar documents'}
-          </button>
-        ) : (
-          <p className="none-scope">Live runs are off right now, so this idea can't run. The worked examples show saved answers.</p>
-        )}
-        {back}
-      </div>
-    </div>
-  )
 }
 
 function FindingView(props: {
@@ -491,18 +476,21 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
   const { evidence, cutoff, earliest } = props
   const firstMark = useRef<HTMLElement>(null)
   const body = useRef<HTMLDivElement>(null)
-  const [figureFailed, setFigureFailed] = useState(false)
 
+  // Scroll to the marked words on a whole line, so the first visible line is never cut in half.
   useEffect(() => {
     const mark = firstMark.current
-    if (mark && body.current) body.current.scrollTop = mark.offsetTop - body.current.clientHeight / 3
+    const box = body.current
+    if (!mark || !box) return
+    const line = parseFloat(getComputedStyle(box).lineHeight)
+    box.scrollTop = Math.round((mark.offsetTop - box.clientHeight / 3) / line) * line
   }, [])
 
   const from = displayName(evidence.from)
   const date = evidence.date as string
   const gap = beforeYourDate(date, cutoff)
   const patent = evidence.kind === 'patent'
-  const lead = [patent ? 'Filed.' : '', earliest ? 'Earliest in what we read.' : ''].filter(Boolean).join(' ')
+  const lead = [patent ? 'Filed.' : '', earliest ? 'Earliest cited.' : ''].filter(Boolean).join(' ')
 
   return (
     <article className={patent ? 'sheet sheet-patent' : 'sheet'}>
@@ -524,18 +512,8 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
           {evidence.list ? <div>List: {evidence.list}</div> : null}
         </div>
       )}
-      <div className="sheet-main">
-        <div className="body" tabIndex={0} ref={body}>
-          <MarkedText text={evidence.text} marks={evidence.marks} firstMark={firstMark} />
-        </div>
-        {evidence.figure && !figureFailed ? (
-          <img
-            className="figure"
-            src={evidence.figure}
-            alt={`A drawing from ${from}`}
-            onError={() => setFigureFailed(true)}
-          />
-        ) : null}
+      <div className="body" tabIndex={0} ref={body}>
+        <MarkedText text={evidence.text} marks={evidence.marks} firstMark={firstMark} />
       </div>
       <div className="source">
         {evidence.url ? (
@@ -545,6 +523,11 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
         ) : (
           <span>No public link.</span>
         )}
+        {evidence.figure ? (
+          <a href={evidence.figure} target="_blank" rel="noreferrer">
+            Patent drawing
+          </a>
+        ) : null}
       </div>
     </article>
   )
