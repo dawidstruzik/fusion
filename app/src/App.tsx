@@ -198,29 +198,34 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
-      <aside className="rail">
-        <div className="rail-top">
-          <a className="name" href="#/">
-            Fusion
-          </a>
+    <div className="app">
+      <header className="toolbar">
+        <a className="name" href="#/">
+          Fusion
+        </a>
+        <div className="toolbar-actions">
+          <CopyChart c={current} />
           <a className="light-button" href="#/">
-            New idea
+            New search
           </a>
         </div>
+      </header>
 
-        <div className="idea">
-          <h1 className="idea-title">{current.title}</h1>
-          <p className="idea-text">{current.run ? current.claim.split(' A method comprising')[0] : current.claim}</p>
-          <p className="cutoff">Before {longDate(current.cutoff)}</p>
-        </div>
+      <div className="shell">
+        <aside className="rail">
+          <div className="idea">
+            <h1 className="idea-title">{current.title}</h1>
+            <p className="idea-text">{current.run ? current.claim.split(' A method comprising')[0] : current.claim}</p>
+            <p className="cutoff">Before {longDate(current.cutoff)}</p>
+          </div>
 
-        <CaseRail c={current} selected={finding.id} onSelect={setFindingId} />
-      </aside>
+          <CaseRail c={current} selected={finding.id} onSelect={setFindingId} />
+        </aside>
 
-      <main className="desk">
-        <FindingView key={finding.id} c={current} finding={finding} live={live} busy={running} onAsk={followUp} />
-      </main>
+        <main className="desk">
+          <FindingView key={finding.id} c={current} finding={finding} live={live} busy={running} onAsk={followUp} />
+        </main>
+      </div>
     </div>
   )
 }
@@ -308,9 +313,26 @@ function Home(props: {
   )
 }
 
+function CopyChart({ c }: { c: Case }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    await navigator.clipboard.writeText(claimChart(c))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button type="button" className="toolbar-button" onClick={copy}>
+      {copied ? 'Copied' : 'Copy claim chart'}
+    </button>
+  )
+}
+
 function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: string) => void }) {
   const { c, selected, onSelect } = props
-  const [copied, setCopied] = useState(false)
+  const parts = c.elements.filter((f) => !f.followUp)
+  const found = parts.filter((f) => f.status === 'found').length
 
   function move(event: React.KeyboardEvent<HTMLUListElement>) {
     const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
@@ -323,14 +345,14 @@ function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: stri
     event.currentTarget.querySelector<HTMLButtonElement>(`[data-id="${next.id}"]`)?.focus()
   }
 
-  async function copy() {
-    await navigator.clipboard.writeText(claimChart(c))
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <>
+      <div className="parts-head">
+        <span className="parts-title">Parts</span>
+        <span>
+          {found} of {parts.length} found
+        </span>
+      </div>
       <ul className="elements" onKeyDown={move}>
         {c.elements.map((f) => (
           <li key={f.id}>
@@ -347,12 +369,6 @@ function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: stri
           </li>
         ))}
       </ul>
-
-      <div className="rail-foot">
-        <button type="button" className="light-button" onClick={copy}>
-          {copied ? 'Copied' : 'Copy claim chart'}
-        </button>
-      </div>
     </>
   )
 }
@@ -414,10 +430,17 @@ function FindingView(props: {
             cutoff={c.cutoff}
             earliest={shown.id === finding.evidence[0]?.id}
           />
-          {finding.answer ? <p className="answer">{finding.answer}</p> : null}
-          <Provenance finding={finding} />
+          {finding.answer ? (
+            <section className="panel">
+              <h3 className="panel-title">Reactor's answer</h3>
+              <p className="answer">{finding.answer}</p>
+              <Provenance finding={finding} />
+            </section>
+          ) : (
+            <Provenance finding={finding} />
+          )}
           <Results evidence={finding.evidence} shownId={shown.id} onShow={show} />
-          <p className="provenance">{scopeSentence(c, finding)}</p>
+          <p className="scope">{scopeSentence(c, finding)}</p>
         </>
       ) : finding.status === 'running' || finding.status === 'queued' ? (
         <Waiting finding={finding} />
@@ -442,16 +465,25 @@ function Provenance({ finding }: { finding: Finding }) {
 
 function Results(props: { evidence: Evidence[]; shownId: string; onShow: (id: string) => void }) {
   const { evidence, shownId, onShow } = props
-  if (evidence.length < 2) return null
   return (
-    <div className="results">
-      <p className="results-note">Reactor cited {evidence.length} documents, in date order.</p>
-      <ol>
+    <div className="panel">
+      <p className="results-note">
+        Reactor cited {evidence.length === 1 ? '1 document' : `${evidence.length} documents, in date order`}.
+      </p>
+      <div className="result-head">
+        <span>Date</span>
+        <span>Type</span>
+        <span>Source</span>
+        <span>Title</span>
+      </div>
+      <ol className="result-list">
         {evidence.map((e) => (
           <li key={e.id}>
             <button type="button" className="result" aria-current={e.id === shownId} onClick={() => onShow(e.id)}>
-              <span className="result-date">{e.date ? longDate(e.date) : 'No date'}</span>
+              <span className="result-clip">{e.date ? longDate(e.date) : 'No date'}</span>
+              <span className="result-clip">{kindWord(e)}</span>
               <span className="result-clip">{displayName(e.from)}</span>
+              <span className="result-clip">{e.subject}</span>
             </button>
           </li>
         ))}
@@ -497,7 +529,7 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
 
   return (
     <article className={patent ? 'sheet sheet-patent' : 'sheet'}>
-      <div className={patent ? 'sticker sticker-patent' : 'sticker'}>
+      <div className="sticker">
         <strong>{longDate(date)}</strong>
         {lead ? <span>{lead}</span> : null}
         <span>{gap}.</span>
