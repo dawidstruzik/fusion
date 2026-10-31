@@ -372,9 +372,8 @@ function RailStatus({ finding }: { finding: Finding }) {
   const earliest = finding.evidence[0]
   if (finding.status === 'found' && earliest?.date) {
     return (
-      <span className="element-date">
+      <span className="element-date" title={kindWord(earliest)}>
         {longDate(earliest.date)}
-        <span className="element-kind">, {earliest.kind === 'patent' ? 'patent' : 'email'}</span>
       </span>
     )
   }
@@ -395,23 +394,30 @@ function FindingView(props: {
   const { c, finding, live, busy, onAsk } = props
   const [shownId, setShownId] = useState(finding.evidence[0]?.id ?? null)
   const shown = finding.evidence.find((e) => e.id === shownId) ?? finding.evidence[0]
+  const view = useRef<HTMLDivElement>(null)
+
+  // The cited documents are listed below the sheet, so bring the sheet back into view.
+  function show(id: string) {
+    setShownId(id)
+    view.current?.querySelector('.sheet')?.scrollIntoView({ block: 'nearest' })
+  }
 
   return (
-    <div className="finding">
+    <div className="finding" ref={view}>
       <h2 className="element-title">{finding.element}</h2>
 
       {finding.status === 'found' && shown ? (
         <>
-          {finding.answer ? <p className="answer">{finding.answer}</p> : null}
-          <Provenance finding={finding} />
-          <p className="provenance">{scopeSentence(c, finding)}</p>
           <Sheet
             key={shown.id}
             evidence={shown}
             cutoff={c.cutoff}
             earliest={shown.id === finding.evidence[0]?.id}
           />
-          <Results evidence={finding.evidence} shownId={shown.id} onShow={setShownId} />
+          {finding.answer ? <p className="answer">{finding.answer}</p> : null}
+          <Provenance finding={finding} />
+          <Results evidence={finding.evidence} shownId={shown.id} onShow={show} />
+          <p className="provenance">{scopeSentence(c, finding)}</p>
         </>
       ) : finding.status === 'running' || finding.status === 'queued' ? (
         <Waiting finding={finding} />
@@ -445,9 +451,7 @@ function Results(props: { evidence: Evidence[]; shownId: string; onShow: (id: st
           <li key={e.id}>
             <button type="button" className="result" aria-current={e.id === shownId} onClick={() => onShow(e.id)}>
               <span className="result-date">{e.date ? longDate(e.date) : 'No date'}</span>
-              <span>{kindWord(e)}</span>
               <span className="result-clip">{displayName(e.from)}</span>
-              <span className="result-clip">{e.subject}</span>
             </button>
           </li>
         ))}
