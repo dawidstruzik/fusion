@@ -149,7 +149,7 @@ export default function App() {
     const fresh: Case = {
       id,
       run: null,
-      title: `Your idea, ${elements.length} parts`,
+      title: `Your idea, ${elements.length} ${elements.length === 1 ? 'part' : 'parts'}`,
       claim: draft.text,
       cutoff: draft.cutoff,
       corpus: cases?.[0]?.corpus ?? 'ietf-tls',
@@ -285,14 +285,14 @@ function Home(props: {
             <h2 className="saved-heading">Previous searches</h2>
             <ul className="saved-list">
               {cases.map((c) => {
-                const earliest = citedDates(c)[0]
+                const title = c.title.split(',')[0]
+                const year = citedDates(c)[0]?.slice(0, 4)
+                const meaning = year ? `Earliest cited ${year}` : 'Nothing cited'
                 return (
                   <li key={c.id}>
-                    <a className="saved" href={ideaHref(c.id)}>
-                      <span className="saved-title">{c.title.split(',')[0]}</span>
-                      <span className="saved-date">
-                        {earliest ? `Earliest cited ${earliest.slice(0, 4)}` : 'Nothing cited'}
-                      </span>
+                    <a className="saved" href={ideaHref(c.id)} title={meaning} aria-label={`${title}. ${meaning}.`}>
+                      <span className="saved-year">{year ?? 'None'}</span>
+                      <span className="saved-title">{title}</span>
                     </a>
                   </li>
                 )
@@ -331,7 +331,7 @@ function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: stri
   return (
     <>
       <p className="tally">
-        Documents found for {found} of {parts.length} parts.
+        Documents found for {found} of {parts.length} {parts.length === 1 ? 'part' : 'parts'}.
       </p>
       <ul className="elements" onKeyDown={move}>
         {c.elements.map((f) => (
