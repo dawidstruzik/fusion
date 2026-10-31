@@ -1,0 +1,8 @@
+{"title": "TLS extensibility probes",
+ "claim": "Modeled on draft-davidben-tls-grease-00. A method comprising: advertising randomly selected reserved cipher suite values in ClientHello.cipher_suites; failing the connection if the server selects a reserved cipher suite value; and returning a server certificate signature over a Merkle root with inclusion proofs for every ignored ClientHello value.",
+ "cutoff": "2016-07-25",
+ "corpus": "ietf-tls",
+ "elements": [
+  {"element": "Random reserved cipher suite advertisements", "question": "Did anyone describe advertising randomly selected reserved cipher suite values in a TLS ClientHello to test tolerance of unknown values?"},
+  {"element": "Rejecting selection of reserved cipher suites", "question": "Did anyone describe failing a TLS connection when the server selects a cipher suite value reserved for testing tolerance of unknown values?"},
+  {"element": "Signed Merkle receipts for ignored values", "question": "Did anyone describe a TLS server returning a signature using its certificate key over a Merkle root, with inclusion proofs for every ignored ClientHello value?"}]}

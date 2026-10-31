@@ -1,0 +1,9 @@
+{"title": "Setting a wrong clock from TLS certificates",
+ "claim": "Modeled on US10069839B2, filed February 11, 2016. A method comprising: noticing that secure connections fail because the device's clock is wrong; taking the time from the certificates and metadata that secure servers send; approximating the current time from several servers; and holding back sensitive data until the time has been approximated.",
+ "cutoff": "2016-02-11",
+ "corpus": "ietf-tls",
+ "elements": [
+  {"element": "Noticing that secure connections fail because the device's clock is wrong", "question": "Did anyone describe a device noticing that its secure connections fail because its clock or system time is wrong?"},
+  {"element": "Taking the time from certificates and metadata sent by secure servers", "question": "Did anyone describe a device taking the current time from the certificates or other metadata that secure servers send?"},
+  {"element": "Approximating the current time from several servers", "question": "Did anyone describe a device approximating the current time from the time information of several secure servers?"},
+  {"element": "Holding back sensitive data until the time has been approximated", "question": "Did anyone describe preventing applications from sending sensitive data until the device's time has been approximated?"}]}

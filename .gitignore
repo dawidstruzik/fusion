@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+external/
+secret.json
+pipeline/runs/
+pipeline/corpus/
+pipeline/.venv/
+__pycache__/
+test-results/
+playwright-report/
+.DS_Store
+*.log

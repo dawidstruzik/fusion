@@ -1,0 +1,31 @@
+{
+  "name": "fusion",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "playwright install chromium --no-shell",
+    "dev": "bun scripts/dev.ts",
+    "server": "bun --watch server/index.ts",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "golden": "playwright test tests/golden.spec.ts",
+    "record": "bun scripts/record.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/libre-franklin": "^5.3.0",
+    "@fontsource/courier-prime": "^5.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/bun": "^1.4.4",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.5"
+  }
+}

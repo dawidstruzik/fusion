@@ -1,0 +1,685 @@
+:root {
+  --blue: #1538c4;
+  --yellow: #ffe83d;
+  --ink: #0d1220;
+  --meta: #4a5366;
+  --desk: #e7ebf2;
+  --paper: #ffffff;
+  --sans: 'Libre Franklin Variable', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'Courier Prime', 'Courier New', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  caret-color: var(--blue);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.rail :focus-visible {
+  outline-color: var(--yellow);
+}
+
+.fatal,
+.empty {
+  padding: 48px;
+  font-size: 22px;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(380px, 34%) 1fr;
+  height: 100%;
+}
+
+/* The rail: the case, in exhibit blue. */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--blue);
+  color: var(--paper);
+  scrollbar-color: var(--paper) var(--blue);
+}
+
+.rail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px 0;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.rail-button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rail-button:hover {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.idea {
+  padding: 16px 32px 10px;
+}
+
+.idea-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.idea textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.idea-date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.idea-date input {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.examples {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+.case-select {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.case-select option {
+  color: var(--ink);
+}
+
+.cutoff {
+  display: block;
+  margin: 12px 0 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.idea-date .cutoff {
+  margin: 0;
+}
+
+.tally {
+  margin: 0;
+  padding: 0 32px 8px;
+  font-size: 15px;
+}
+
+.elements {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 12px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.element {
+  display: block;
+  width: 100%;
+  padding: 9px 32px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.element:hover:not([aria-current='true'], .element-static) {
+  background: color-mix(in srgb, var(--paper) 12%, var(--blue));
+}
+
+.element[aria-current='true'] {
+  background: var(--desk);
+  color: var(--ink);
+}
+
+.element-static {
+  cursor: default;
+}
+
+.element-text {
+  display: block;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.element-text::first-letter,
+.element-title::first-letter {
+  text-transform: uppercase;
+}
+
+.element-date,
+.element-none {
+  display: block;
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.element-kind {
+  font-weight: 500;
+}
+
+.element-date {
+  color: var(--yellow);
+}
+
+.element[aria-current='true'] .element-date {
+  color: var(--blue);
+}
+
+.element-none {
+  font-weight: 500;
+}
+
+.rail-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 32px 24px;
+}
+
+/* The desk: the record for the selected element. */
+
+.desk {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.finding {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 56px 28px;
+  overflow-y: auto;
+}
+
+.element-title {
+  max-width: 34em;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.answer {
+  max-width: 44em;
+  margin: 12px 0 0;
+  font-size: 19px;
+}
+
+.provenance {
+  margin: 6px 0 0;
+  color: var(--meta);
+  font-size: 15px;
+  text-wrap: pretty;
+}
+
+.sheet {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 340px;
+  margin-top: 44px;
+  padding: 28px 36px 20px;
+  background: var(--paper);
+  box-shadow: 0 10px 30px rgb(13 18 32 / 12%);
+}
+
+.sticker {
+  position: absolute;
+  top: -26px;
+  right: 28px;
+  z-index: 1;
+  padding: 12px 20px 14px;
+  background: var(--blue);
+  color: var(--paper);
+  box-shadow: 0 6px 14px rgb(13 18 32 / 25%);
+  animation: stick 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sticker strong {
+  display: block;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.sticker span {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+}
+
+/* A patent is a different document, so it reads differently: ink label, set type, no mail headers. */
+
+.sticker-patent {
+  background: var(--ink);
+}
+
+.patent-head {
+  min-height: 52px;
+  margin-bottom: 12px;
+  padding-right: 360px;
+}
+
+.patent-number {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.patent-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.patent-filed {
+  margin-top: 2px;
+  color: var(--meta);
+  font-size: 15px;
+}
+
+.sheet-patent .body {
+  font-family: var(--sans);
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.figure {
+  flex: 0 0 34%;
+  min-width: 0;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: top;
+}
+
+.sheet-patent .source {
+  font-family: var(--sans);
+}
+
+@keyframes stick {
+  from {
+    transform: scale(1.14);
+    opacity: 0;
+  }
+}
+
+/* Holds the top of the sheet clear of the sticker, even for a message with no headers. */
+.headers {
+  min-height: 52px;
+  margin-bottom: 14px;
+  padding-right: 360px;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.sheet-main {
+  display: flex;
+  flex: 1;
+  gap: 28px;
+  min-height: 0;
+}
+
+.body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 12px 8px 0;
+  mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 8px), transparent);
+  font-family: var(--mono);
+  font-size: 17px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  scrollbar-color: var(--meta) var(--paper);
+}
+
+mark {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.source {
+  padding-top: 14px;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--meta);
+  overflow-wrap: anywhere;
+}
+
+.source a,
+.text-link {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.source a {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.text-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.results {
+  margin-top: 12px;
+}
+
+.results-note {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.results ol {
+  max-height: 128px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: 170px 130px minmax(0, 190px) minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.result:hover {
+  background: var(--paper);
+}
+
+.result[aria-current='true'] {
+  background: var(--paper);
+  font-weight: 700;
+}
+
+.result-date {
+  font-weight: 700;
+}
+
+.result-clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Not found: a result, with no sheet and no sticker. */
+
+.none {
+  flex: 1;
+  padding-top: 72px;
+}
+
+.none-line {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.none-scope {
+  max-width: 40em;
+  margin: 18px 0 0;
+  font-size: 21px;
+}
+
+.follow-up {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.follow-up input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--meta);
+  opacity: 1;
+}
+
+.action {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--blue);
+  color: var(--paper);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--ink);
+}
+
+.action:disabled {
+  background: var(--meta);
+  cursor: not-allowed;
+}
+
+.notice {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.run {
+  display: block;
+  margin-top: 24px;
+  font-size: 19px;
+}
+
+button.none-scope {
+  display: block;
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .shell {
+    display: block;
+    height: auto;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+  }
+
+  .rail-top,
+  .idea,
+  .tally,
+  .element,
+  .rail-foot {
+    padding-inline: 16px;
+  }
+
+  .cutoff {
+    font-size: 28px;
+  }
+
+  .finding {
+    height: auto;
+    padding: 24px 16px;
+  }
+
+  .result {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .results ol {
+    max-height: none;
+  }
+
+  .element-title {
+    font-size: 23px;
+  }
+
+  .sheet {
+    margin-top: 96px;
+    padding: 72px 16px 16px;
+  }
+
+  .sticker {
+    right: 12px;
+    left: 12px;
+    top: -56px;
+  }
+
+  .sticker strong {
+    font-size: 28px;
+  }
+
+  .headers,
+  .patent-head {
+    padding-right: 0;
+  }
+
+  .sheet-main {
+    flex-direction: column;
+  }
+
+  .figure {
+    flex: none;
+    width: 100%;
+    max-height: 60vh;
+  }
+
+  .body {
+    max-height: 60vh;
+  }
+
+  .follow-up input {
+    flex-basis: 100%;
+  }
+
+  .none {
+    padding-top: 24px;
+  }
+
+  .none-line {
+    font-size: 40px;
+  }
+}

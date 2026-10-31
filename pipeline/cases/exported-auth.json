@@ -1,0 +1,8 @@
+{"title": "Certificate proofs after the TLS handshake",
+ "claim": "Modeled on draft-sullivan-tls-exported-authenticator-00. A method comprising: exporting a certificate ownership proof after the TLS handshake for transmission out of band to the peer; constructing that proof as Certificate, CertificateVerify, and Finished messages; and requiring the receiver to check a DNSSEC authenticated per certificate epoch counter to reject proofs issued before the current epoch.",
+ "cutoff": "2016-10-31",
+ "corpus": "ietf-tls",
+ "elements": [
+  {"element": "Certificate ownership proofs outside the connection", "question": "Did anyone describe exporting a certificate ownership proof after a TLS handshake for transmission out of band and verification by the peer?"},
+  {"element": "Three message certificate proof construction", "question": "Did anyone describe constructing an exportable TLS certificate ownership proof as a sequence of Certificate, CertificateVerify, and Finished messages?"},
+  {"element": "DNSSEC epoch checks for proof revocation", "question": "Did anyone describe revoking exportable TLS certificate ownership proofs by requiring receivers to check a DNSSEC authenticated per certificate epoch counter and reject proofs from earlier epochs?"}]}

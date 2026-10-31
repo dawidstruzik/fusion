@@ -1,0 +1,10 @@
+{"title": "Encrypted SNI, checked against its first draft",
+ "claim": "Modeled on draft-rescorla-tls-esni-00. A method comprising: encrypting the server name in the TLS handshake; obtaining the key for that encryption from DNS; sending a hash of the server name instead of the name; letting a front server decrypt the hello and hand the connection to a backend; and publishing the key in a blockchain.",
+ "cutoff": "2018-07-02",
+ "corpus": "ietf-tls",
+ "elements": [
+  {"element": "Encrypting the server name in the TLS handshake", "question": "Did anyone describe encrypting the server name (SNI) in the TLS handshake?"},
+  {"element": "Obtaining the key for that encryption from DNS", "question": "Did anyone describe encrypting the server name with a public key obtained from DNS?"},
+  {"element": "Sending a hash of the server name instead of the name", "question": "Did anyone describe sending a hash of the server name instead of the name itself?"},
+  {"element": "A front server decrypting the hello and handing the connection to a backend", "question": "Did anyone describe a front server decrypting an encrypted client hello and handing the connection off to a backend server?"},
+  {"element": "Publishing that key in a blockchain", "question": "Did anyone describe publishing the server name encryption key in a blockchain?"}]}
