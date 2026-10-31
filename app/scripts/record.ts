@@ -29,6 +29,7 @@ await page.waitForTimeout(5000)
 
 // The next idea, to show an email as well as a patent.
 await page.goto(`${base}/#/idea/${cases[1]?.id}`)
+await page.mouse.move(1000, 5) // Off the rail, so no row shows its hover color.
 await page.locator('mark').first().waitFor()
 await page.waitForTimeout(6500)
 

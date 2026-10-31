@@ -1,7 +1,7 @@
 // API server. It reads saved answers from pipeline/runs and asks live questions through the
 // pipeline, which holds Reactor's lock. Secrets stay on the server side: anything imported by
 // the client ends up in the browser bundle.
-import { figureFile, loadCases, loadTimeline, toLiveAnswer } from './cases.ts'
+import { figureFile, loadCases, toLiveAnswer } from './cases.ts'
 
 const port = Number(process.env.API_PORT ?? 8787)
 const repo = new URL('../..', import.meta.url).pathname
@@ -95,12 +95,6 @@ const server = Bun.serve({
           console.error(error)
           return Response.json({ error: 'Saved answers could not be read.' }, { status: 500 })
         }
-      },
-    },
-    '/api/timeline': {
-      GET: async (req) => {
-        const timeline = await loadTimeline(new URL(req.url).searchParams.get('corpus') ?? '')
-        return timeline ? Response.json(timeline) : Response.json({ error: 'not found' }, { status: 404 })
       },
     },
     '/api/figure': {
