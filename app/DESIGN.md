@@ -25,6 +25,7 @@ Chosen by Impeccable's direction roll (seed:a4bdc960eae63e88) without the decisi
 
 - Type scale: 80 for the home question, 60 for the not-found line, 34 for the date label, 30 for the cutoff, 28 for the part, 17 to 19 for reading, 15 at the smallest.
 - Fonts are bundled through `@fontsource`, never a CDN.
+- The logo is the Core mark, in the current text color left of the name on both pages, and in red as the favicon.
 - Text on red is always white, never ink: the user rejected ink on red for low contrast. Red text on the desk is for large text or links only.
 - The record's own words are ink on a plain yellow highlight, with no underline or extra weight. Found dates in the sidebar are red.
 - The idea page is a product screen: a red toolbar, a light sidebar with the case and its parts, and white panels on the desk. A found part reads in this order: the part, the document with its date, Reactor's answer, a table of the cited documents, then what was searched.
