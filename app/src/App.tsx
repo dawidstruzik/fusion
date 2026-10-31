@@ -201,6 +201,7 @@ export default function App() {
     <div className="app">
       <header className="toolbar">
         <a className="name" href="#/">
+          <Mark />
           Fusion
         </a>
         <div className="toolbar-actions">
@@ -227,6 +228,16 @@ export default function App() {
         </main>
       </div>
     </div>
+  )
+}
+
+function Mark() {
+  return (
+    <svg className="mark" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+      <path d="M36 0A28 28 0 0 1 36 56V47.49A16 16 0 0 0 36 16.51Z" />
+      <path d="M28 64A28 28 0 0 1 28 8V16.51A16 16 0 0 0 28 47.49Z" />
+      <circle cx="32" cy="32" r="9.5" />
+    </svg>
   )
 }
 
@@ -258,7 +269,10 @@ function Home(props: {
   return (
     <div className="home">
       <Rain />
-      <span className="name home-name">Fusion</span>
+      <span className="name home-name">
+        <Mark />
+        Fusion
+      </span>
       <main className="home-column">
         <h1 className="home-title">Did anyone think of it first?</h1>
         <form className="home-box" onSubmit={submit}>
