@@ -211,7 +211,7 @@ export default function App() {
 
         <div className="idea">
           <h1 className="idea-title">{current.title}</h1>
-          <p className="idea-text">{current.claim}</p>
+          <p className="idea-text">{current.run ? current.claim.split(' A method comprising')[0] : current.claim}</p>
           <p className="cutoff">Before {longDate(current.cutoff)}</p>
         </div>
 
@@ -277,6 +277,7 @@ function Home(props: {
             </button>
           </div>
         </form>
+        <p className="home-scope">Searches 14,118 US patents close to TLS and 16,313 IETF TLS emails, 1996 to 2018.</p>
         {note ? (
           <p className="home-note" role={tried ? 'status' : undefined}>
             {note}
@@ -310,8 +311,6 @@ function Home(props: {
 function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: string) => void }) {
   const { c, selected, onSelect } = props
   const [copied, setCopied] = useState(false)
-  const parts = c.elements.filter((f) => !f.followUp)
-  const found = parts.filter((f) => f.status === 'found').length
 
   function move(event: React.KeyboardEvent<HTMLUListElement>) {
     const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
@@ -332,9 +331,6 @@ function CaseRail(props: { c: Case; selected: string | null; onSelect: (id: stri
 
   return (
     <>
-      <p className="tally">
-        Documents found for {found} of {parts.length} {parts.length === 1 ? 'part' : 'parts'}.
-      </p>
       <ul className="elements" onKeyDown={move}>
         {c.elements.map((f) => (
           <li key={f.id}>
@@ -478,6 +474,7 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
   const { evidence, cutoff, earliest } = props
   const firstMark = useRef<HTMLElement>(null)
   const body = useRef<HTMLDivElement>(null)
+  const [figureFailed, setFigureFailed] = useState(false)
 
   // Scroll to the marked words on a whole line, so the first visible line is never cut in half.
   useEffect(() => {
@@ -514,8 +511,18 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
           {evidence.list ? <div>List: {evidence.list}</div> : null}
         </div>
       )}
-      <div className="body" tabIndex={0} ref={body}>
-        <MarkedText text={evidence.text} marks={evidence.marks} firstMark={firstMark} />
+      <div className="sheet-main">
+        <div className="body" tabIndex={0} ref={body}>
+          <MarkedText text={evidence.text} marks={evidence.marks} firstMark={firstMark} />
+        </div>
+        {evidence.figure && !figureFailed ? (
+          <img
+            className="figure"
+            src={evidence.figure}
+            alt={`A drawing from ${from}`}
+            onError={() => setFigureFailed(true)}
+          />
+        ) : null}
       </div>
       <div className="source">
         {evidence.url ? (
@@ -525,11 +532,6 @@ function Sheet(props: { evidence: Evidence; cutoff: string; earliest: boolean })
         ) : (
           <span>No public link.</span>
         )}
-        {evidence.figure ? (
-          <a href={evidence.figure} target="_blank" rel="noreferrer">
-            Patent drawing
-          </a>
-        ) : null}
       </div>
     </article>
   )
