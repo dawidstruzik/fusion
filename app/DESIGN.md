@@ -26,11 +26,11 @@ Chosen by Impeccable's direction roll (seed:a4bdc960eae63e88) without the decisi
 - Fonts are bundled through `@fontsource`, never a CDN.
 - Text on red is always white, never ink: the user rejected ink on red for low contrast. Red text on the desk is for large text or links only.
 - The record's own words are bold ink on a 4px red underline, with no background. No yellow.
-- Home is one red page: the question, the idea box and the previous searches in one centered column. With live off, pressing Search says so and points at the previous searches.
+- Home is one red page: the question, the idea box and the previous searches in one centered column, over a red that darkens toward the bottom with patent numbers and dates from the corpus rising behind everything. With live off, pressing Search says so and points at the previous searches.
 - A label's limit stays on screen: "Earliest cited" is what the code knows, since it sorts what Reactor cited by date.
 - Signature: the date label on the corner of the sheet, with its distance from your date. A not-found result has no sheet and no label, so the two read differently from the back of a room.
 - Emails and patents are different documents: an email is plain text in Space Mono under mail headers with a red label. A patent is set in Archivo under its number and title with an ink label. Its drawing is a link, because a flowchart can't be read beside the abstract.
 - A short abstract fits with no scrolling, and a long email scrolls to its marked words on a whole line.
-- Motion: only the label landing on a sheet, 260 ms, off under reduced motion. No fake progress: a live question shows a real seconds counter.
+- Motion: the label landing on a sheet, 260 ms, and the streams on the home page, both off under reduced motion. No fake progress: a live question shows a real seconds counter.
 - The user's slop list in `AGENTS.md` applies. The date label is the one element near that line: it's a large solid block carrying content, not a small tag.
 - Live and saved are always stated.

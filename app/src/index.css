@@ -105,18 +105,79 @@ textarea {
   position: relative;
   height: 100%;
   overflow-y: auto;
-  background: var(--red);
+  background: linear-gradient(to bottom, var(--red) 0%, var(--red) 58%, #8e0c13 82%, #760a10 100%) fixed;
   color: var(--paper);
+}
+
+/* Patent numbers and dates rising up the page, behind everything, in a bell of column heights. */
+
+.rain {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 46vh;
+  pointer-events: none;
+}
+
+.rain b {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  overflow: hidden;
+  font-weight: 400;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, rgb(0 0 0 / 0.8) 45%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, rgb(0 0 0 / 0.8) 45%, transparent 100%);
+}
+
+.rain i {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: var(--paper);
+  font: 400 12px/1 var(--mono);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform-origin: bottom;
+  animation: rise linear infinite;
+}
+
+.rain i.far {
+  font-size: 11px;
+  opacity: 0.1;
+}
+
+.rain i.mid {
+  font-size: 13px;
+  opacity: 0.16;
+}
+
+.rain i.near {
+  font-size: 15px;
+  opacity: 0.26;
+}
+
+@keyframes rise {
+  from {
+    transform: rotate(180deg) translateY(45vh);
+  }
+  to {
+    transform: rotate(180deg) translateY(calc(50% + 45vh));
+  }
 }
 
 .home-name {
   position: absolute;
   top: 34px;
   left: 56px;
+  z-index: 1;
   font-size: 26px;
 }
 
 .home-column {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -693,7 +754,8 @@ textarea::placeholder {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sticker {
+  .sticker,
+  .rain i {
     animation: none;
   }
 }

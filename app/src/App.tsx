@@ -9,6 +9,7 @@ import {
   scopeSentence,
   splitIdea,
 } from './lib'
+import { Rain } from './Rain'
 import type { Case, Evidence, Finding, Scope } from './types'
 
 // hack-main's figure for a live question: embedder load, ledger and Reactor, 2 to 3 minutes.
@@ -251,6 +252,7 @@ function Home(props: {
 
   return (
     <div className="home">
+      <Rain />
       <span className="name home-name">Fusion</span>
       <main className="home-column">
         <h1 className="home-title">Did anyone think of it first?</h1>
